@@ -4,7 +4,7 @@ import json
 import requests
 
 @gpt_function
-def get_current_weather(location: str):
+def get_weather(location: str, day: str):
     """
     Useful for getting the weather at a location
     :param location: the location to get the weather for

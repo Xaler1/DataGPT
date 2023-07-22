@@ -23,7 +23,7 @@ class GPTFunction:
 
         self.properties["reason"] = {
             "type": "string",
-            "description": "What you think this function will do. In present tense with '-ing'"
+            "description": "What are you doing by using this function. In present tense with '-ing' ending. Always required."
         }
         self.required.append("reason")
 
