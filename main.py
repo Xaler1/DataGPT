@@ -4,6 +4,7 @@ import secret.keys as keys
 from src.conversator import Conversator
 from functions.weather import get_weather
 from functions.google import send_email, get_user_email, search_email, get_email_by_id, reply_to_email
+from functions.news import get_news_headlines, get_full_article
 from functions.basic import get_basic_info
 import traceback
 import streamlit_js_eval as stjs
@@ -19,6 +20,7 @@ gpt_search_email = search_email
 st.title('GPT Assistant')
 st.sidebar.button("Clear chat", on_click=lambda: st.session_state.conversator.reset())
 
+# Initialize the conversator and save it to the session state
 if "conversator" not in st.session_state:
     st.session_state.conversator = Conversator([gpt_weather,
                                                 gpt_send_email,
@@ -26,7 +28,9 @@ if "conversator" not in st.session_state:
                                                 gpt_search_email,
                                                 get_basic_info,
                                                 get_email_by_id,
-                                                reply_to_email
+                                                reply_to_email,
+                                                get_news_headlines,
+                                                get_full_article
                                                 ])
 
 with st.container():
