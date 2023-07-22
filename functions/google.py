@@ -15,7 +15,7 @@ _SCOPES = [
     ]
 
 
-def init_services():
+def _init_services():
     """
     Initializes the Gmail service.
     :return:
@@ -40,8 +40,8 @@ def init_services():
         st.session_state.service = build('gmail', 'v1', credentials=creds)
     return st.session_state.service
 
-def get_email(service, id):
-    msg = service.users().messages().get(userId="me", id=id).execute()
+def get_email(service, email_id):
+    msg = service.users().messages().get(userId="me", id=email_id).execute()
     subject = ""
     sender = ""
     date = ""
@@ -55,7 +55,10 @@ def get_email(service, id):
 
     body = msg["payload"]["body"]
     if "size" in body and body["size"] == 0:
-        body = msg["payload"]["parts"][0]["body"]["data"]
+        if "size" in msg["payload"]["parts"][0]["body"] and msg["payload"]["parts"][0]["body"]["size"] == 0:
+            body = msg["payload"]["parts"][0]["parts"][0]["body"]["data"]
+        else:
+            body = msg["payload"]["parts"][0]["body"]["data"]
     else:
         body = body["data"]
 
@@ -65,7 +68,7 @@ def get_email(service, id):
             "date": date,
             "body": body,
             "labels": msg["labelIds"],
-            "id": id
+            "id": email_id
     }
 
 @gpt_function
@@ -74,7 +77,7 @@ def get_user_email():
     Useful for getting the email of the user you are talking to.
     """
 
-    service = init_services()
+    service = _init_services()
 
     user_info = service.users().getProfile(userId="me").execute()
     return {"email": user_info["emailAddress"]}
@@ -91,7 +94,7 @@ def send_email(recipient_email: str, subject: str, body: str):
     :param body: the body of the email. Must be neat and formatted as html.
     """
 
-    service = init_services()
+    service = _init_services()
 
     # Write markdown email
     message = MIMEText(body, "html")
@@ -107,22 +110,58 @@ def send_email(recipient_email: str, subject: str, body: str):
 
 
 @gpt_function
+def get_email_by_id(email_id: str):
+    """
+    Useful for getting the full text of an email by its id.
+    :param email_id: the id of the email
+    """
+
+    service = _init_services()
+
+    return get_email(service, email_id)
+
+
+@gpt_function
+def reply_to_email(body: str, email_id: str):
+    """
+    Useful for sending a response to an email.
+    :param body: the body of the email. Must be neat and formatted as html. Exclude the <html> and <body> tags.
+    :param email_id: the id of the email to respond to
+    """
+
+    service = _init_services()
+
+    msg = service.users().messages().get(userId="me", id=email_id).execute()
+    email = get_email(service, email_id)
+
+    message = MIMEText(body, "html")
+    message["to"] = email["sender"]
+    message["subject"] = f"Re: {email['subject']}"
+    message["In-Reply-To"] = email["id"]
+    message["References"] = email["id"]
+    create_message = {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode(), "threadId": msg["threadId"]}
+
+    try:
+        message = (service.users().messages().send(userId="me", body=create_message).execute())
+        return {"outcome" : f'sent message to {message} Message Id: {message["id"]}'}
+    except HTTPError as error:
+        return {"outcome": f'An error occurred: {error}'}
+
+
+
+@gpt_function
 def search_email(query: str, max_results: int = 5):
     """
-    Searches for emails that match the query.
-    :param query: the query to search for. Use the same syntax as you would in gmail. Make it speicific.
-    :param max_results: the maximum number of results to return, optional
+    Useful for searching for emails in the user's inbox.
+    :param query: the query to search for. Use the same search syntax as you would in gmail. DO NOT invent or assume emails.
+    :param max_results: the maximum number of results to return, optional integer
     :return: a list of emails
     """
 
-    print(query)
-
-    service = init_services()
+    service = _init_services()
 
     results = service.users().messages().list(userId="me", q=query).execute()
     messages = results.get("messages", [])
-
-    print(messages)
 
     if not messages:
         return {"outcome": "No messages found."}
@@ -130,11 +169,29 @@ def search_email(query: str, max_results: int = 5):
 
     formatted_messages = {"messages": []}
     for message in messages[:max_results]:
-        formatted_messages["messages"].append(
-            get_email(service, message["id"])
-        )
+        msg = service.users().messages().get(userId="me", id=message["id"]).execute()
+        subject = ""
+        sender = ""
+        date = ""
+        for header in msg["payload"]["headers"]:
+            if header["name"] == "Subject":
+                subject = header["value"]
+            elif header["name"] == "From":
+                sender = header["value"]
+            elif header["name"] == "Date":
+                date = header["value"]
 
-    print(formatted_messages)
+        snippet = msg["snippet"]
+        formatted_messages["messages"].append(
+            {
+                "subject": subject,
+                "sender": sender,
+                "date": date,
+                "snippet": snippet,
+                "labels": msg["labelIds"],
+                "id": message["id"]
+            }
+        )
     return formatted_messages
 
 

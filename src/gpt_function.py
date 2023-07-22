@@ -40,6 +40,14 @@ class GPTFunction:
 
     def __call__(self, args: dict):
         args.pop("reason")
+        # Covert to correct types
+        for property in self.properties:
+            if property in args:
+                if self.properties[property]["type"] == "integer":
+                    args[property] = int(args[property])
+                elif self.properties[property]["type"] == "list":
+                    args[property] = json.loads(args[property])
+
         result = self.func_callable(**args)
         return json.dumps(result, indent=4)
 
@@ -98,7 +106,7 @@ def gpt_function(func):
         required = []
         for index, param in enumerate(parameters):
             properties[param] = {
-                "type": mapping.get(str(parameters[param].annotation), "string"),
+                "type": mapping.get(parameters[param].annotation.__name__, "string"),
                 "description": docstring.params[index].description
             }
             if parameters[param].default is inspect.Parameter.empty:

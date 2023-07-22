@@ -4,7 +4,7 @@ import json
 import streamlit as st
 
 _starter_prompt = """You are a helpful assistant that helps people with their daily tasks.
-Every single response to the user must use Markdown for formatting to make it neat and readable. Use tables for data.
+Every single response to the user must use Markdown for formatting to make it neat and readable. Use tables for data. Add linebreaks where necessary for readability.
 Do not duplicate data when formatting.
 Emails must absolutely always use html for formatting.
 Do not send emails unless explicitly told to do so by the user. The user my explicitly say the word "send".
@@ -13,6 +13,7 @@ Never ever make up or invent email addresses if you don't actually know the emai
 You can use multiple functions one after the other if you deem it necessary, before giving a final response.
 Only repeat actions if it is necessary.
 In your responses only include information that is relevant to the user's query.
+If presenting requested information, keep your own comments to a minimum.
 """
 
 
@@ -22,6 +23,8 @@ class Conversator:
         self.messages = []
         self.internal_messages = [{"role": "system", "content": _starter_prompt}]
         self.functions = {}
+        self.last_msg_len = 0
+        self.last_internal_msg_len = 1
         for function in functions:
             self.functions[function.name] = function
 
@@ -45,6 +48,9 @@ class Conversator:
 
         self.messages.append(message)
         self.internal_messages.append(message)
+
+        self.last_msg_len = len(self.messages)
+        self.last_internal_msg_len = len(self.internal_messages)
         return message["content"]
 
     def call_function(self, name: str, args: dict):
@@ -63,6 +69,10 @@ class Conversator:
 
     def get_messages(self):
         return self.messages
+
+    def reset_to_last(self):
+        self.messages = self.messages[:self.last_msg_len]
+        self.internal_messages = self.internal_messages[:self.last_internal_msg_len]
 
     def reset(self):
         self.messages = []

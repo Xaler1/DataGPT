@@ -2,9 +2,9 @@ import streamlit as st
 import openai
 import secret.keys as keys
 from src.conversator import Conversator
-from readymade.weather import get_weather
-from readymade.google import send_email, get_user_email, search_email
-from readymade.basic import get_basic_info
+from functions.weather import get_weather
+from functions.google import send_email, get_user_email, search_email, get_email_by_id, reply_to_email
+from functions.basic import get_basic_info
 import traceback
 import streamlit_js_eval as stjs
 
@@ -24,7 +24,9 @@ if "conversator" not in st.session_state:
                                                 gpt_send_email,
                                                 gpt_get_user_info,
                                                 gpt_search_email,
-                                                get_basic_info
+                                                get_basic_info,
+                                                get_email_by_id,
+                                                reply_to_email
                                                 ])
 
 with st.container():
@@ -41,6 +43,7 @@ with st.container():
             while not success:
                 attempts += 1
                 if attempts > 4:
+                    st.session_state.conversator.reset_to_last()
                     st.error("Something went wrong, please try again.")
                     st.stop()
                     break
@@ -51,6 +54,7 @@ with st.container():
                     print("\n\n---------------------------------------------")
                     traceback.print_exc()
                     print("---------------------------------------------\n\n")
+
 
         with st.chat_message("assistant"):
             st.markdown(response)
