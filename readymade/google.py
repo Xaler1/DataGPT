@@ -138,6 +138,14 @@ def search_email(query: str, max_results: int = 5):
     return formatted_messages
 
 
+def get_calendar():
+    """
+    Useful for getting the calendar of the user you are talking to.
+    """
+
+
+
+
 
 
 
