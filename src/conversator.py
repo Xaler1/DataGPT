@@ -19,6 +19,7 @@ If presenting requested information, keep your own comments to a minimum.
 
 class Conversator:
     def __init__(self, functions: list):
+        self.all_functions = functions
         openai.api_key = keys.openai_key
         self.messages = []
         self.internal_messages = [{"role": "system", "content": _starter_prompt}]

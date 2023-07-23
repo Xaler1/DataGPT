@@ -5,3 +5,5 @@ geopy~=2.3.0
 docstring-parser~=0.15
 streamlit-js-eval~=0.1.5
 google-api-python-client~=2.94.0
+google-auth-oauthlib~=0.4.6
+streamlit-authenticator~=0.2.2

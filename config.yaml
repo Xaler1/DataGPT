@@ -1,0 +1,5 @@
+auth:
+  cookie:
+    expiry_days: 30
+    key: "signature"
+    name: "authentication-token"
