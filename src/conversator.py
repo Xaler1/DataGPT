@@ -44,7 +44,7 @@ class Conversator:
         while message.get("function_call"):
             func_name = message["function_call"]["name"]
             func_args = json.loads(message["function_call"]["arguments"])
-            with st.spinner(func_args["reason"]):
+            with st.spinner(f"{func_args['reason']}[{func_name}]"):
                 message = self.call_function(func_name, func_args)
 
         self.messages.append(message)

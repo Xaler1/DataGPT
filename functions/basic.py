@@ -19,5 +19,6 @@ def get_basic_info():
     address = location.raw["address"]
     return {"time": datetime.datetime.now().strftime("%H:%M"),
             "date": datetime.datetime.now().strftime("%d/%m/%Y"),
-            "location": f"{address['city']}, {address['state']}, {address['country']}"
+            "location": f"{address['city']}, {address['state']}, {address['country']}",
+            "latlong": f"{raw_location['latitude']},{raw_location['longitude']}",
     }

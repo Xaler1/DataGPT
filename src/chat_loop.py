@@ -3,8 +3,10 @@ import openai
 import secret.keys as keys
 from src.conversator import Conversator
 from functions.weather import get_weather
-from functions.google import send_email, get_user_email, search_email, get_email_by_id, reply_to_email
+from functions.gmail import send_email, get_user_email, search_email, get_email_by_id, reply_to_email
 from functions.news import get_news_headlines, get_full_article
+from functions.tripadvisor import search_places, find_nearby
+from functions.gmaps import search_nearby, search_place, get_place_details
 from functions.basic import get_basic_info
 import traceback
 import streamlit_js_eval as stjs
@@ -26,14 +28,12 @@ class Chat:
         # Initialize the conversator and save it to the session state
         if "conversator" not in st.session_state:
             st.session_state.conversator = Conversator([get_weather,
-                                                        send_email,
-                                                        get_user_email,
-                                                        search_email,
                                                         get_basic_info,
-                                                        get_email_by_id,
-                                                        reply_to_email,
-                                                        get_news_headlines,
-                                                        get_full_article
+                                                        get_user_email,
+                                                        send_email, search_email, get_email_by_id, reply_to_email,
+                                                        get_news_headlines, get_full_article,
+                                                        # search_places, find_nearby,
+                                                        search_place, get_place_details
                                                         ])
 
         for function in st.session_state.conversator.all_functions:
