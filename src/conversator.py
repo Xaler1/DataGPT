@@ -2,6 +2,7 @@ import openai
 from secret import keys
 import json
 import streamlit as st
+import yaml
 
 _starter_prompt = """You are a helpful assistant that helps people with their daily tasks.
 Every single response to the user must use Markdown for formatting to make it neat and readable. Use tables for data. Add linebreaks where necessary for readability.
@@ -29,12 +30,16 @@ class Conversator:
         for function in functions:
             self.functions[function.name] = function
 
+        config = yaml.safe_load(open("config.yaml"))
+        self.model_name = config["model"]["main"]
+
+
     def process_msg(self, msg: str):
         self.messages.append({"role": "user", "content": msg})
         self.internal_messages.append({"role": "user", "content": msg})
         with st.spinner("Thinking..."):
             response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-16k",
+                model=self.model_name,
                 messages=self.internal_messages,
                 functions=list(map(lambda x: x.to_dict(), self.functions.values())),
                 function_call="auto"
@@ -59,7 +64,7 @@ class Conversator:
         func_result = func(args)
         self.internal_messages.append({"role": "function", "name": name, "content": func_result})
         message = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-16k",
+            model=self.model_name,
             messages=self.internal_messages,
             functions=list(map(lambda x: x.to_dict(), self.functions.values())),
             function_call="auto"

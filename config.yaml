@@ -3,3 +3,7 @@ auth:
     expiry_days: 30
     key: "signature"
     name: "authentication-token"
+
+model:
+  main: "gpt-3.5-turbo-16k"
+  agent: "gpt-3.5-turbo-16k"

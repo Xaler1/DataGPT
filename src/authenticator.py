@@ -6,6 +6,8 @@ import streamlit as st
 
 class Authenticator:
     def __init__(self):
+        self.dbdriver = st.session_state.dbdriver
+
         # Load the config file
         with open("config.yaml", "r") as f:
             config = yaml.safe_load(f)
@@ -70,11 +72,15 @@ class Authenticator:
         except Exception as e:
             st.error(e)
 
+        st.button("Login", on_click=lambda: st.session_state.__setitem__("authentication_status", None))
+
     def show_login(self):
         try:
             name, auth_state, password = self.authenticator.login('Login', 'main')
+            self.authenticator
         except Exception as e:
             st.error(e)
+        st.button("Sign up", on_click=lambda: st.session_state.__setitem__("authentication_status", "signup"))
 
     def show_logout(self):
         self.authenticator.logout("Logout", "sidebar")
