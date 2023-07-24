@@ -7,3 +7,6 @@ auth:
 model:
   main: "gpt-3.5-turbo-16k"
   agent: "gpt-3.5-turbo-16k"
+
+gmail:
+  auth_redir: "http://localhost"

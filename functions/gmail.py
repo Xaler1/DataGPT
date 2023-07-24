@@ -12,6 +12,8 @@ from streamlit.components.v1 import html
 import urllib.parse
 import threading
 import socket
+import json
+from src.dbmodels import User
 
 _SCOPES = [
     "https://mail.google.com/"
@@ -27,16 +29,16 @@ def open_page(url):
     html(open_script)
 
 
-def retrieve_creds(flow, state, auth_port):
+def retrieve_creds(flow, state, auth_port, user: User):
     creds = flow.run_local_server(port=auth_port, open_browser=False, state=state)
     # Save the credentials for the next run
-    with open('secret/token.json', 'w') as token:
-        token.write(creds.to_json())
+    user.gmail_token = creds.to_json()
+    user.save()
     st.experimental_rerun()
 
 
-def retrieve_timeout(flow, state, auth_port, timeout=500):
-    thread = threading.Thread(target=retrieve_creds, args=(flow, state, auth_port))
+def retrieve_timeout(flow, state, auth_port, user: User, timeout=500):
+    thread = threading.Thread(target=retrieve_creds, args=(flow, state, auth_port, user))
     thread.start()
     thread.join(timeout=timeout)
 
@@ -56,7 +58,8 @@ def link_account():
     state = url[1]
     url = url[0] + "&redirect_uri=" + redirect
     open_page(url)
-    thread = threading.Thread(target=retrieve_timeout, args=(flow, state, auth_port))
+    user = st.session_state["authed_user"]
+    thread = threading.Thread(target=retrieve_timeout, args=(flow, state, auth_port, user))
     thread.start()
 
 
@@ -68,16 +71,19 @@ def _init_services():
 
     creds = None
     # Import credentials or create new ones
-    if os.path.exists('secret/token.json'):
-        creds = Credentials.from_authorized_user_file('secret/token.json', _SCOPES)
+    if st.session_state["authed_user"].gmail_token is not None:
+        user = st.session_state["authed_user"]
+        token = json.loads(user.gmail_token)
+        print(token)
+        creds = Credentials.from_authorized_user_info(token, _SCOPES)
+
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
+            st.session_state["authed_user"].gmail_token = creds.to_json()
+            st.session_state["authed_user"].save()
         else:
             return None
-        # Save the credentials for the next run
-        with open('secret/token.json', 'w') as token:
-            token.write(creds.to_json())
 
     if "service" not in st.session_state:
         st.session_state.service = build('gmail', 'v1', credentials=creds)

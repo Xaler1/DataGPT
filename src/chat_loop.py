@@ -13,6 +13,7 @@ from functions.gmaps import search_nearby, search_place, get_place_details
 from functions.basic import get_basic_info
 import traceback
 import streamlit_js_eval as stjs
+from src.dbmodels import User
 
 
 class Chat:
@@ -25,7 +26,7 @@ class Chat:
 
         st.title('GPT Assistant')
         st.sidebar.button("Clear chat", on_click=lambda: st.session_state.conversator.reset())
-        gmail_linked = os.path.exists("secret/token.json")
+        gmail_linked = st.session_state["authed_user"].gmail_linked()
         text = "Google Account Linked!" if gmail_linked else "Link Google Account"
         st.sidebar.button(text, on_click=link_account, disabled=gmail_linked)
         st.sidebar.header("Tools:")

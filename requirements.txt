@@ -7,3 +7,5 @@ streamlit-js-eval~=0.1.5
 google-api-python-client~=2.94.0
 google-auth-oauthlib~=0.4.6
 streamlit-authenticator~=0.2.2
+peewee~=3.16.2
+PyYAML~=6.0
