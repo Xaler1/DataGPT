@@ -27,8 +27,8 @@ class Chat:
         st.title('GPT Assistant')
         st.sidebar.button("Clear chat", on_click=lambda: st.session_state.conversator.reset())
         gmail_linked = st.session_state["authed_user"].gmail_linked()
-        text = "Google Account Linked!" if gmail_linked else "Link Google Account"
-        st.sidebar.button(text, on_click=link_account, disabled=gmail_linked)
+        text = "Delete Google Account" if gmail_linked else "Link Google Account"
+        st.sidebar.button(text, on_click=link_account)
         st.sidebar.header("Tools:")
 
 

@@ -14,6 +14,7 @@ import threading
 import socket
 import json
 from src.dbmodels import User
+import yaml
 
 _SCOPES = [
     "https://mail.google.com/"
@@ -44,7 +45,12 @@ def retrieve_timeout(flow, state, auth_port, user: User, timeout=500):
 
 
 def link_account():
-    # Get auth url, add redirect uri, open in browser, get auth code
+    if st.session_state["authed_user"].gmail_linked():
+        st.session_state["authed_user"].gmail_token = None
+        st.session_state["authed_user"].save()
+        st.experimental_rerun()
+
+    config = yaml.safe_load(open("config.yaml", "r"))["gmail"]
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         for port in range(8502, 8600):
@@ -54,7 +60,7 @@ def link_account():
     print("Port", auth_port)
     flow = InstalledAppFlow.from_client_secrets_file('secret/credentials.json', _SCOPES)
     url = flow.authorization_url()
-    redirect = urllib.parse.quote_plus(f"http://localhost:{auth_port}/")
+    redirect = urllib.parse.quote_plus(f"{config['auth_redir']}{auth_port}/")
     state = url[1]
     url = url[0] + "&redirect_uri=" + redirect
     open_page(url)

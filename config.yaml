@@ -9,4 +9,4 @@ model:
   agent: "gpt-3.5-turbo-16k"
 
 gmail:
-  auth_redir: "http://localhost"
+  auth_redir: "http://localhost:"
