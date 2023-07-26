@@ -45,8 +45,14 @@ class GPTFunction:
             if property in args:
                 if self.properties[property]["type"] == "integer":
                     args[property] = int(args[property])
-                elif self.properties[property]["type"] == "list":
-                    args[property] = json.loads(args[property])
+                elif self.properties[property]["type"] == "array":
+                    args[property] = args[property]
+                    if self.properties[property]["items"]["type"] == "integer":
+                        args[property] = list(map(int, args[property]))
+                    elif self.properties[property]["items"]["type"] == "number":
+                        args[property] = list(map(float, args[property]))
+                elif self.properties[property]["type"] == "number":
+                    args[property] = float(args[property])
 
         result = self.func_callable(**args)
         return json.dumps(result, indent=4)
@@ -56,7 +62,8 @@ def gpt_function(func):
     mapping = {
         "str": "string",
         "int": "integer",
-        "list": "list"
+        "float": "number",
+        "list": "array",
     }
 
     try:
@@ -105,12 +112,19 @@ def gpt_function(func):
         properties = {}
         required = []
         for index, param in enumerate(parameters):
+            param_type = mapping.get(parameters[param].annotation.__name__, "string")
             properties[param] = {
-                "type": mapping.get(parameters[param].annotation.__name__, "string"),
+                "type": param_type,
                 "description": docstring.params[index].description
             }
+            # Extract the inner type of the array
+            if param_type == "array":
+                properties[param]["items"] = {
+                    "type": mapping.get(parameters[param].annotation.__args__[0].__name__, "string")
+                }
             if parameters[param].default is inspect.Parameter.empty:
                 required.append(param)
+
     except Exception as e:
         st.error(f"Error parsing the '{func.__name__}' function")
         st.code(traceback.format_exc())

@@ -3,10 +3,13 @@ import streamlit as st
 from src.chat_loop import Chat
 from src.dbmodels import *
 
+st.set_page_config(layout="wide")
 if "authentication_status" not in st.session_state:
     st.session_state["authentication_status"] = None
 if "user" not in st.session_state:
     st.session_state["user"] = None
+if "messages" not in st.session_state:
+    st.session_state["messages"] = []
 
 # Check the authentication status
 authenticator = Authenticator()

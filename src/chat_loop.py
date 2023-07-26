@@ -12,6 +12,7 @@ from functions.tripadvisor import search_places, find_nearby
 from functions.gmaps import search_nearby, search_place, get_place_details
 from functions.edgar import get_cik, get_company_info, get_company_filings, get_full_filing
 from functions.basic import get_basic_info
+from functions.plotting import plot_data
 import traceback
 import streamlit_js_eval as stjs
 from src.dbmodels import User
@@ -43,15 +44,19 @@ class Chat:
                                                         # search_places, find_nearby,
                                                         search_place, get_place_details,
                                                         get_cik, get_company_info, get_company_filings, get_full_filing,
+                                                        plot_data
                                                         ])
 
         for function in st.session_state.conversator.all_functions:
             st.sidebar.checkbox(function.name, value=True)
 
         with st.container():
-            for message in st.session_state.conversator.get_messages():
-                with st.chat_message(message["role"]):
-                    st.markdown(message["content"])
+            for message in st.session_state["messages"]:
+                if message["role"] == "plot":
+                    st.pyplot(message["content"], use_container_width=False)
+                else:
+                    with st.chat_message(message["role"]):
+                        st.markdown(message["content"])
 
             if prompt := st.chat_input("Enter your message"):
                 with st.chat_message("user"):

@@ -24,7 +24,6 @@ class Conversator:
     def __init__(self, functions: list):
         self.all_functions = functions
         openai.api_key = keys.openai_key
-        self.messages = []
         self.internal_messages = [{"role": "system", "content": _starter_prompt}]
         self.functions = {}
         self.last_msg_len = 0
@@ -37,7 +36,7 @@ class Conversator:
 
 
     def process_msg(self, msg: str):
-        self.messages.append({"role": "user", "content": msg})
+        st.session_state["messages"].append({"role": "user", "content": msg})
         self.internal_messages.append({"role": "user", "content": msg})
         with st.spinner("Thinking..."):
             response = openai.ChatCompletion.create(
@@ -56,10 +55,10 @@ class Conversator:
             with st.spinner(f"{func_args['reason']}[{func_name}]"):
                 message = self.call_function(func_name, func_args)
 
-        self.messages.append(message)
+        st.session_state["messages"].append(message)
         self.internal_messages.append(message)
 
-        self.last_msg_len = len(self.messages)
+        self.last_msg_len = len(st.session_state["messages"])
         self.last_internal_msg_len = len(self.internal_messages)
         return message["content"]
 
@@ -69,21 +68,17 @@ class Conversator:
         self.internal_messages.append({"role": "function", "name": name, "content": func_result})
         message = openai.ChatCompletion.create(
             model=self.model_name,
-            messages=self.internal_messages + [{"role": "system", "content": "Has this achieved the desired result? Does another function need to be called?"}],
+            messages=self.internal_messages, #+ [{"role": "system", "content": "Only proceed if this achieved the desired result and no another function need to be called"}],
             functions=list(map(lambda x: x.to_dict(), self.functions.values())),
             function_call="auto"
         )
         message = message["choices"][0]["message"]
         return message
 
-
-    def get_messages(self):
-        return self.messages
-
     def reset_to_last(self):
-        self.messages = self.messages[:self.last_msg_len]
+        st.session_state["messages"] = st.session_state["messages"][:self.last_msg_len]
         self.internal_messages = self.internal_messages[:self.last_internal_msg_len]
 
     def reset(self):
-        self.messages = []
+        st.session_state["messages"] = []
         self.internal_messages = [{"role": "system", "content": _starter_prompt}]
