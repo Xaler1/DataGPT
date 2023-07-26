@@ -59,10 +59,9 @@ def link_account():
                 break
     print("Port", auth_port)
     flow = InstalledAppFlow.from_client_secrets_file('secret/credentials.json', _SCOPES)
-    url = flow.authorization_url()
-    redirect = urllib.parse.quote_plus(f"{config['auth_redir']}{auth_port}/")
-    state = url[1]
-    url = url[0] + "&redirect_uri=" + redirect
+    url, state = flow.authorization_url()
+    redirect = urllib.parse.quote_plus(config['auth_redir'])
+    url = url + "&redirect_uri=" + redirect
     open_page(url)
     user = st.session_state["authed_user"]
     thread = threading.Thread(target=retrieve_timeout, args=(flow, state, auth_port, user))

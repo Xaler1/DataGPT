@@ -12,9 +12,11 @@ Do not send emails unless explicitly told to do so by the user. The user my expl
 Always let the user review the email before sending it and ask for confirmation.
 Never ever make up or invent email addresses if you don't actually know the email address.
 You can use multiple functions one after the other if you deem it necessary, before giving a final response.
+Remember that some tasks can be completed using information you already have, without new function calls.
 Only repeat actions if it is necessary.
 In your responses only include information that is relevant to the user's query.
 If presenting requested information, keep your own comments to a minimum.
+If needed ask the user clarifying questions instead of immediately working on the task.
 """
 
 
@@ -49,6 +51,8 @@ class Conversator:
         while message.get("function_call"):
             func_name = message["function_call"]["name"]
             func_args = json.loads(message["function_call"]["arguments"])
+            if "reason" not in func_args:
+                func_args["reason"] = "Working on it..."
             with st.spinner(f"{func_args['reason']}[{func_name}]"):
                 message = self.call_function(func_name, func_args)
 
@@ -65,7 +69,7 @@ class Conversator:
         self.internal_messages.append({"role": "function", "name": name, "content": func_result})
         message = openai.ChatCompletion.create(
             model=self.model_name,
-            messages=self.internal_messages,
+            messages=self.internal_messages + [{"role": "system", "content": "Has this achieved the desired result? Does another function need to be called?"}],
             functions=list(map(lambda x: x.to_dict(), self.functions.values())),
             function_call="auto"
         )

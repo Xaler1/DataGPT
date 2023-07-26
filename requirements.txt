@@ -9,3 +9,6 @@ google-auth-oauthlib~=0.4.6
 streamlit-authenticator~=0.2.2
 peewee~=3.16.2
 PyYAML~=6.0
+pandas~=2.0.3
+beautifulsoup4~=4.12.2
+html5lib~=1.1

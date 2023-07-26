@@ -122,7 +122,7 @@ def search_place(query: str,
 @gpt_function
 def get_place_details(place_id: str):
     """
-    Useful for getting the details of a place.
+    Useful for getting the details of a place. The address, phone number, website, opening hours, and link to Google Maps.
     :param place_id: the place ID of the place to get the details of
     """
 

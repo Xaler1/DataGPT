@@ -10,6 +10,7 @@ from functions.gmail import link_account
 from functions.news import get_news_headlines, get_full_article
 from functions.tripadvisor import search_places, find_nearby
 from functions.gmaps import search_nearby, search_place, get_place_details
+from functions.edgar import get_cik, get_company_info, get_company_filings, get_full_filing
 from functions.basic import get_basic_info
 import traceback
 import streamlit_js_eval as stjs
@@ -40,7 +41,8 @@ class Chat:
                                                         send_email, search_email, get_email_by_id, reply_to_email,
                                                         get_news_headlines, get_full_article,
                                                         # search_places, find_nearby,
-                                                        search_place, get_place_details
+                                                        search_place, get_place_details,
+                                                        get_cik, get_company_info, get_company_filings, get_full_filing,
                                                         ])
 
         for function in st.session_state.conversator.all_functions:
