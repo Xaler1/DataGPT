@@ -15,29 +15,19 @@ def get_weather(location: str, day: str):
     response = requests.get(url)
     json_data = json.loads(response.text)
 
-    forecast = []
-    for hour in json_data["forecast"]["forecastday"][0]["hour"][::3]:
-        forecast.append({
-            "time": hour["time"].split(" ")[1],
-            "temp_c": hour["temp_c"],
-            "condition": hour["condition"]["text"],
-            "wind_kph": hour["wind_kph"],
-            "wind_dir": hour["wind_dir"],
-            "chance_of_rain": hour["chance_of_rain"],
-        })
-
-    filtered = {
-        "forecast": forecast
+    forecast = {
+        "time": [],
+        "temp_c": [],
+        "condition": [],
+        "wind_kph": [],
+        "wind_dir": [],
+        "chance_of_rain": [],
     }
-
-    #If the user wants to know the weather for today, also include the current weather
-    if day == datetime.datetime.now().strftime("%Y-%m-%d"):
-        current = json_data["current"]
-        filtered["current"] = {
-            "temp_c": current["temp_c"],
-            "condition": current["condition"]["text"],
-            "wind_kph": current["wind_kph"],
-            "wind_dir": current["wind_dir"],
-            "precipitation_mm": current["precip_mm"],
-        }
-    return filtered
+    for hour in json_data["forecast"]["forecastday"][0]["hour"][::2]:
+        forecast["time"].append(hour["time"].split(" ")[1])
+        forecast["temp_c"].append(hour["temp_c"])
+        forecast["condition"].append(hour["condition"]["text"])
+        forecast["wind_kph"].append(hour["wind_kph"])
+        forecast["wind_dir"].append(hour["wind_dir"])
+        forecast["chance_of_rain"].append(hour["chance_of_rain"])
+    return forecast

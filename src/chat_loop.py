@@ -1,21 +1,15 @@
-import os.path
-
 import streamlit as st
 import openai
 import secret.keys as keys
 from src.conversator import Conversator
 from functions.weather import get_weather
-from functions.gmail import send_email, get_user_email, search_email, get_email_by_id, reply_to_email
-from functions.gmail import link_account
 from functions.news import get_news_headlines, get_full_article
-from functions.tripadvisor import search_places, find_nearby
-from functions.gmaps import search_nearby, search_place, get_place_details
-from functions.edgar import get_cik, get_company_info, get_company_filings, get_full_filing
+from functions.gmaps import search_place, get_place_details
 from functions.basic import get_basic_info
+from data.storage import manual_write_data, get_data_details, read_data
 from functions.plotting import plot_data
 import traceback
 import streamlit_js_eval as stjs
-from src.dbmodels import User
 
 
 class Chat:
@@ -26,29 +20,23 @@ class Chat:
         st.session_state.raw_geo = stjs.get_geolocation()
         openai.api_key = keys.openai_key
 
-        st.title('GPT Assistant')
-        st.sidebar.button("Clear chat", on_click=lambda: st.session_state.conversator.reset())
-        gmail_linked = st.session_state["authed_user"].gmail_linked()
-        text = "Delete Google Account" if gmail_linked else "Link Google Account"
-        st.sidebar.button(text, on_click=link_account)
-        st.sidebar.header("Tools:")
-
-
         # Initialize the conversator and save it to the session state
         if "conversator" not in st.session_state:
             st.session_state.conversator = Conversator([get_weather,
                                                         get_basic_info,
-                                                        get_user_email,
-                                                        send_email, search_email, get_email_by_id, reply_to_email,
+                                                        #get_user_email,
+                                                        #send_email, search_email, get_email_by_id, reply_to_email,
                                                         get_news_headlines, get_full_article,
                                                         # search_places, find_nearby,
                                                         search_place, get_place_details,
-                                                        get_cik, get_company_info, get_company_filings, get_full_filing,
-                                                        plot_data
+                                                        #get_cik, get_company_info, get_company_filings, get_full_filing,
+                                                        plot_data,
+                                                        manual_write_data, get_data_details, read_data
                                                         ])
 
-        for function in st.session_state.conversator.all_functions:
-            st.sidebar.checkbox(function.name, value=True)
+        with st.sidebar.expander("functions", expanded=False):
+            for function in st.session_state.conversator.all_functions:
+                st.checkbox(function.name, value=True)
 
         with st.container():
             for message in st.session_state["messages"]:

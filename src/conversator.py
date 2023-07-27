@@ -38,10 +38,15 @@ class Conversator:
     def process_msg(self, msg: str):
         st.session_state["messages"].append({"role": "user", "content": msg})
         self.internal_messages.append({"role": "user", "content": msg})
+        available_data = {}
+        for name, data in st.session_state["data"].items():
+            available_data[name] = data["summary"]
+        available_data = json.dumps(available_data, indent=4)
+        data_message = [{"role": "system", "content": f"Data available from storage:\n{available_data}"}]
         with st.spinner("Thinking..."):
             response = openai.ChatCompletion.create(
                 model=self.model_name,
-                messages=self.internal_messages,
+                messages=self.internal_messages + data_message,
                 functions=list(map(lambda x: x.to_dict(), self.functions.values())),
                 function_call="auto"
             )
@@ -49,6 +54,7 @@ class Conversator:
 
         while message.get("function_call"):
             func_name = message["function_call"]["name"]
+            print(message["function_call"]["arguments"])
             func_args = json.loads(message["function_call"]["arguments"])
             if "reason" not in func_args:
                 func_args["reason"] = "Working on it..."
