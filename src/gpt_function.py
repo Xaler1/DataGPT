@@ -102,7 +102,10 @@ def gpt_function(func):
                 return None
 
         # Check that the docstring has a description.
-        if docstring.short_description is None or docstring.short_description.strip() == "":
+        description = docstring.long_description
+        if description is None:
+            description = docstring.short_description
+        if description is None or description == "":
             st.error(f"""
             The docstring of the '{func.__name__}' function does not have a description.
             """)
@@ -115,7 +118,7 @@ def gpt_function(func):
             param_type = mapping.get(parameters[param].annotation.__name__, "string")
             properties[param] = {
                 "type": param_type,
-                "description": docstring.params[index].description
+                "description": docstring.params[index].description.replace("\n", " ")
             }
             # Extract the inner type of the array
             if param_type == "array":
@@ -133,7 +136,7 @@ def gpt_function(func):
 
     return GPTFunction(
         name=func.__name__,
-        description=docstring.short_description,
+        description=description,
         properties=properties,
         required=required,
         func_callable=func

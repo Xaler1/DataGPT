@@ -55,9 +55,10 @@ def show_sidebar(authenticator):
     if uploaded_file is not None:
         dataframe = pd.read_csv(uploaded_file)
         name = uploaded_file.name.replace(".csv", "")
-        with st.spinner("Processing..."):
-            summary = describe_dataframe(name, dataframe)
-        st.session_state["data"][name] = {"data": dataframe, "summary": summary, "columns": list(dataframe.columns)}
+        if name not in st.session_state["data"]:
+            with st.spinner("Processing..."):
+                summary = describe_dataframe(name, dataframe)
+            st.session_state["data"][name] = {"data": dataframe, "summary": summary, "columns": list(dataframe.columns)}
 
     col1, col2, col3 = expander.columns(3)
     with col1:

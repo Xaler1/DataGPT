@@ -47,7 +47,8 @@ def get_data_details(name: str):
 @gpt_function
 def read_data(name: str):
     """
-    Useful for reading data.
+    Useful for reading all of the data. Do not use for analysis, use 'analyze_data' instead.
+    Returns ALL of the data in the dataframe. which most likely will be overwhelming.
 
     :param name: the name of the dataframe.
     """

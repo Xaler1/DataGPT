@@ -7,7 +7,8 @@ from functions.news import get_news_headlines, get_full_article
 from functions.gmaps import search_place, get_place_details
 from functions.basic import get_basic_info
 from data.storage import manual_write_data, get_data_details, read_data
-from functions.plotting import plot_data
+from data.manipulation import analyze_data
+from data.plotting import plot_data
 import traceback
 import streamlit_js_eval as stjs
 
@@ -31,7 +32,8 @@ class Chat:
                                                         search_place, get_place_details,
                                                         #get_cik, get_company_info, get_company_filings, get_full_filing,
                                                         plot_data,
-                                                        manual_write_data, get_data_details, read_data
+                                                        manual_write_data, get_data_details, read_data,
+                                                        analyze_data
                                                         ])
 
         with st.sidebar.expander("functions", expanded=False):
@@ -42,6 +44,8 @@ class Chat:
             for message in st.session_state["messages"]:
                 if message["role"] == "plot":
                     st.pyplot(message["content"], use_container_width=False)
+                if message["role"] == "image":
+                    st.image(message["content"], use_container_width=False)
                 else:
                     with st.chat_message(message["role"]):
                         st.markdown(message["content"])
