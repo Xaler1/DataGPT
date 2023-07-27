@@ -9,7 +9,7 @@ from time import sleep
 @gpt_function
 def analyze_data(analysis_code: str, data_name: str):
     """
-    Useful for analyzing data, extracting statistics. The data is a pandas dataframe.
+    Useful for analyzing data, extracting statistics. Answering questions about the data. The data is a pandas dataframe.
     Before calling this function allways call 'get_data_details' to understand the structure of the data.
     :param analysis_code: the python code to be used to analyze the data. The data will be stored in a variable called
     "data". Put all of the results you need in a json called "result". There must be a single varible called "result"
@@ -24,7 +24,8 @@ def analyze_data(analysis_code: str, data_name: str):
 
     # Remove all import lines and lines that attempt to read a file
     analysis_code = re.sub(r"import.*\n", "", analysis_code)
-    analysis_code = re.sub(r"pd.read_csv.*\n", "", analysis_code)
+    analysis_code = re.sub(r"data = pd.read_csv.*\n", "", analysis_code)
+    analysis_code = re.sub(r"data = pd.read_excel.*\n", "", analysis_code)
 
 
     # Save the data to a csv file
@@ -49,6 +50,10 @@ def analyze_data(analysis_code: str, data_name: str):
         return {"error": stderr.decode("utf-8")}
     else:
         print("\nResults:")
-        print(stdout.decode("utf-8"))
-        results = json.loads(stdout.decode("utf-8"))
+        result = stdout.decode("utf-8").replace("'", '"')
+        print(result)
+        try:
+            results = json.loads(result)
+        except Exception:
+            results = result
         return {"results": results}
