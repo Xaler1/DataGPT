@@ -10,11 +10,13 @@ from time import sleep
 def analyze_data(analysis_code: str, data_name: str):
     """
     Useful for analyzing data, extracting statistics. Answering questions about the data. The data is a pandas dataframe.
-    Before calling this function allways call 'get_data_details' to understand the structure of the data.
+    Before calling this function ALWAYS call 'get_data_details' to understand the structure of the data.
     :param analysis_code: the python code to be used to analyze the data. The data will be stored in a variable called
     "data". Put all of the results you need in a json called "result". There must be a single varible called "result"
     and it must be a dictionary of all the results you need.
     This should be the code and just the code, do not add any additional comments or text.
+    Make sure to only use columns that are specified in the data. Remember, they can be slightly different from the user input!
+    Think about what columns are needed and not what exactly the user inputted.
     :param data_name: the name of the data to be analyzed.
     """
 

@@ -35,7 +35,11 @@ def plot_data(plotting_code: str, data_name: str):
     plotting_code = re.sub(r"= pd.read.*\n", "= pd.read_csv('temp/data.csv')", plotting_code)
 
     plotting_code = f"{data_name} = pd.read_csv('temp/data.csv')\n" + plotting_code
-    plotting_code = "import pandas as pd\nimport math\nimport numpy as np\nimport matplotlib.pyplot as plt\n" + plotting_code
+    plotting_code = "import pandas as pd\n" \
+                    "import math\n" \
+                    "import numpy as np\n" \
+                    "import matplotlib.pyplot as plt\n" \
+                    "import seaborn as sns\n" + plotting_code
 
 
     # Save the data to a csv file
