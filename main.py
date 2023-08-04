@@ -4,7 +4,7 @@ from src.chat_loop import Chat
 from src.dbmodels import *
 from functions.gmail import link_account
 import pandas as pd
-from io import StringIO
+import data.core as core
 from agents.data_describer import describe_dataframe
 
 def set_state_defaults():
@@ -58,7 +58,7 @@ def show_sidebar(authenticator):
         if name not in st.session_state["data"]:
             with st.spinner("Processing..."):
                 summary = describe_dataframe(name, dataframe)
-            st.session_state["data"][name] = {"data": dataframe, "summary": summary, "columns": list(dataframe.columns)}
+            core.save_new_data(dataframe, name, summary)
 
     col1, col2, col3 = expander.columns(3)
     with col1:
@@ -68,13 +68,13 @@ def show_sidebar(authenticator):
     with col3:
         st.header("Download")
 
-    for name, data in st.session_state["data"].items():
+    for name, details in core.get_all_data_details().items():
         with col1:
             st.write(name)
         with col2:
-            st.write(data["summary"])
+            st.write(details["summary"])
         with col3:
-            st.download_button("Download", data["data"].to_csv().encode("utf-8"), f"{name}.csv", "text/csv")
+            st.download_button("Download", details["data"].to_csv().encode("utf-8"), f"{name}.csv", "text/csv")
 
 
 if __name__ == "__main__":

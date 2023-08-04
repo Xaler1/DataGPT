@@ -1,7 +1,8 @@
 from src.gpt_function import gpt_function
 import pandas as pd
-import streamlit as st
 import json
+import data.core as core
+
 
 @gpt_function
 def manual_write_data(data: str, name: str, summary: str):
@@ -19,7 +20,7 @@ def manual_write_data(data: str, name: str, summary: str):
         return {"error": "The data could not be parsed into a pandas dataframe. You must reformat the data and try again."}
     print("\nStoring data...")
     print(data)
-    st.session_state["data"][name] = {"data": data, "summary": summary, "columns": list(data.columns)}
+    core.save_new_data(data, name, summary)
 
     return {"result": "The data has been stored. No additional output is required."}
 
@@ -30,12 +31,14 @@ def get_data_details(name: str):
 
     :param name: the name of the dataset.
     """
-    if name not in st.session_state["data"]:
+
+    data = core.get_data_details(name)
+    if data == None:
         return {"error": "The dataset does not exist. Please store the dataset first."}
     else:
-        summary = st.session_state["data"][name]["summary"]
-        columns = st.session_state["data"][name]["columns"]
-        sample = st.session_state["data"][name]["data"].head(1).to_json()
+        summary = data["summary"]
+        columns = data["columns"]
+        sample = data["data"].head(1).to_json()
         return {
             "name": name,
             "summary": summary,
@@ -52,7 +55,8 @@ def read_data(name: str):
 
     :param name: the name of the dataframe.
     """
-    if name not in st.session_state["data"]:
+    data = core.get_data(name)
+    if data is None:
         return {"error": "The dataset does not exist. Please store the dataset first."}
     else:
-        return {"data": st.session_state["data"][name]["data"].to_json()}
+        return {"data": data.to_json()}

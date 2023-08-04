@@ -1,12 +1,14 @@
 from src.gpt_function import gpt_function
-import streamlit as st
+import data.core as core
 import re
 import os
 from subprocess import Popen, PIPE
 from time import sleep
 from matplotlib import pyplot as plt
+import streamlit as st
 import traceback
 import numpy as np
+
 
 @gpt_function
 def plot_data(plotting_code: str, data_name: str):
@@ -27,10 +29,6 @@ def plot_data(plotting_code: str, data_name: str):
     print("Code:")
     print(plotting_code)
 
-    # Check if the data exists
-    if data_name not in st.session_state["data"]:
-        return {"error": "The dataset does not exist. Please store the dataset first."}
-
     plotting_code = re.sub(r"import.*\n", "", plotting_code)
     plotting_code = re.sub(r"= pd.read.*\n", "= pd.read_csv('temp/data.csv')", plotting_code)
 
@@ -41,24 +39,16 @@ def plot_data(plotting_code: str, data_name: str):
                     "import matplotlib.pyplot as plt\n" \
                     "import seaborn as sns\n" + plotting_code
 
-
     # Save the data to a csv file
     os.makedirs("temp", exist_ok=True)
-    data = st.session_state["data"][data_name]["data"]
+    data = core.get_data(data_name)
+    if data is None:
+        return {"error": "The dataset does not exist. Please store the dataset first."}
     data.to_csv("temp/data.csv", index=False)
 
     with open("temp/plotting.py", "w") as f:
         f.write(plotting_code)
     try:
-        params = {
-            'axes.labelsize': 6,
-            'axes.titlesize': 6,
-            'xtick.labelsize': 6,
-            'ytick.labelsize': 6,
-            'axes.titlepad': 1,
-            'axes.labelpad': 1,
-            'font.size': 12
-        }
         process = Popen(["python", "temp/plotting.py"], stdout=PIPE, stderr=PIPE)
         while process.poll() is None:
             sleep(0.1)
@@ -70,4 +60,5 @@ def plot_data(plotting_code: str, data_name: str):
         traceback.print_exc()
         return {"error": "The plotting code could not be executed. Please check your code and try again."}
     else:
-        return {"result": "The plot has been displayed to the user. No additional output is required. Do not output the code"}
+        return {
+            "result": "The plot has been displayed to the user. No additional output is required. Do not output the code"}

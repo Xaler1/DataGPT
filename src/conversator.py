@@ -2,6 +2,7 @@ import openai
 from secret import keys
 import json
 import streamlit as st
+import data.core as core
 import yaml
 
 _starter_prompt = """You are a helpful assistant that helps people with their daily tasks.
@@ -39,7 +40,7 @@ class Conversator:
         st.session_state["messages"].append({"role": "user", "content": msg})
         self.internal_messages.append({"role": "user", "content": msg})
         available_data = {}
-        for name, data in st.session_state["data"].items():
+        for name, data in core.get_all_data_details().items():
             available_data[name] = data["summary"]
         available_data = json.dumps(available_data, indent=4)
         data_message = [{"role": "system", "content": f"Data available from storage:\n{available_data}"}]
