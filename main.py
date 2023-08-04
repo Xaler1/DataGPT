@@ -64,35 +64,6 @@ def show_sidebar(authenticator: Authenticator) -> None:
     text = "Delete Google Account" if gmail_linked else "Link Google Account"
     st.sidebar.button(text, on_click=link_account)
 
-    expander = st.sidebar.expander("Data")
-
-    # Allow data uploading
-    uploaded_file = expander.file_uploader("Upload data", type=["csv"], accept_multiple_files=False, key="data_upload")
-    if uploaded_file is not None:
-        dataframe = pd.read_csv(uploaded_file)
-        name = uploaded_file.name.replace(".csv", "")
-        if name not in st.session_state["data"]:
-            with st.spinner("Processing..."):
-                summary = describe_dataframe(name, dataframe)
-            core.save_new_data(dataframe, name, summary)
-
-    # Show all the data
-    col1, col2, col3 = expander.columns(3)
-    with col1:
-        st.header("Name")
-    with col2:
-        st.header("Summary")
-    with col3:
-        st.header("Download")
-
-    for name, details in core.get_all_data_details().items():
-        with col1:
-            st.write(name)
-        with col2:
-            st.write(details["summary"])
-        with col3:
-            st.download_button("Download", details["data"].to_csv().encode("utf-8"), f"{name}.csv", "text/csv")
-
 
 if __name__ == "__main__":
     set_state_defaults()
