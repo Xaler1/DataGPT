@@ -22,6 +22,8 @@ def set_state_defaults():
         st.session_state["messages"] = []
     if "data" not in st.session_state:
         st.session_state["data"] = {}
+    if "data_view" not in st.session_state:
+        st.session_state["data_view"] = {"name": None, "columns": None}
 
 
 def check_authentication(authenticator: Authenticator) -> None:
