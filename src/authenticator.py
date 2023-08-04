@@ -6,6 +6,10 @@ from peewee import DoesNotExist
 
 
 class Authenticator:
+    """
+    The authenticator class. Handles all the authentication logic.
+    """
+
     def __init__(self):
         # Load the config file
         with open("config.yaml", "r") as f:
@@ -13,20 +17,18 @@ class Authenticator:
 
         auth_config = config["auth"]
 
-
-
         # Convert to json
         users = {}
         for user in User.select():
-            users[user.username]= {
-                    "name": user.name,
-                    "password": user.password
-                }
+            users[user.username] = {
+                "name": user.name,
+                "password": user.password
+            }
         users = {
             "usernames": users
         }
 
-        # Create the authenticator
+        # Create the library authenticator
         self.authenticator = stauth.Authenticate(
             users,
             auth_config['cookie']['name'],
@@ -35,7 +37,11 @@ class Authenticator:
             {"emails": []}
         )
 
-    def check_auth(self):
+    def check_auth(self) -> None:
+        """
+        Checks for an authentication cookie. Then checks if the user is in the database.
+        If not, the cookie is deleted.
+        """
         self.authenticator._check_cookie()
         if st.session_state["authentication_status"] is True:
             try:
@@ -45,8 +51,11 @@ class Authenticator:
                 st.session_state["username"] = None
                 self.authenticator.cookie_manager.delete(self.authenticator.cookie_name)
 
-
-    def show_signup(self):
+    def show_signup(self) -> None:
+        """
+        Shows the signup page and upon signup captures the new user's
+        credentials and adds them to the database.
+        """
         old_users = set(self.authenticator.credentials["usernames"])
         try:
             if self.authenticator.register_user('Sign up', preauthorization=False):
@@ -67,6 +76,9 @@ class Authenticator:
         st.button("Login", on_click=lambda: st.session_state.__setitem__("authentication_status", None))
 
     def show_login(self):
+        """
+        Shows the login page and upon login sets the session state to the logged in user.
+        """
         try:
             name, auth_state, username = self.authenticator.login('Login', 'main')
             if auth_state:
@@ -77,9 +89,9 @@ class Authenticator:
         st.button("Sign up", on_click=lambda: st.session_state.__setitem__("authentication_status", "signup"))
 
     def show_logout(self):
+        """
+        Shows the logout button and upon logout clears the session state.
+        :return:
+        """
         self.authenticator.logout("Logout", "sidebar")
         st.session_state["user"] = None
-
-
-
-

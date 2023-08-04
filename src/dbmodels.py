@@ -4,6 +4,10 @@ db = SqliteDatabase('auth.db')
 
 
 class User(Model):
+    """
+    A database user model.
+    Stores the username, name, email, password, gmail token and whether the user is approved.
+    """
     username = CharField(unique=True)
     name = CharField()
     email = CharField()

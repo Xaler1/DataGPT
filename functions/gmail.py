@@ -21,7 +21,11 @@ _SCOPES = [
 ]
 
 
-def open_page(url):
+def open_page(url: str):
+    """
+    Opens a new page in the browser.
+    :param url: the url to open
+    """
     open_script = """
         <script type="text/javascript">
             window.open('%s', '_blank').focus();
@@ -30,7 +34,14 @@ def open_page(url):
     html(open_script)
 
 
-def retrieve_creds(flow, state, auth_port, user: User):
+def retrieve_creds(flow: InstalledAppFlow, state: str, auth_port: int, user: User):
+    """
+    Runs a gmail authentication server to retrieve the credentials after the user signs in.
+    :param flow: the authentication flow object
+    :param state: the state id of the authentication
+    :param auth_port: the port to run the authentication server on
+    :param user: the user to save the credentials to
+    """
     creds = flow.run_local_server(port=auth_port, open_browser=False, state=state)
     # Save the credentials for the next run
     user.gmail_token = creds.to_json()
@@ -38,13 +49,25 @@ def retrieve_creds(flow, state, auth_port, user: User):
     st.experimental_rerun()
 
 
-def retrieve_timeout(flow, state, auth_port, user: User, timeout=500):
+def retrieve_timeout(flow: InstalledAppFlow, state: str, auth_port: int, user: User, timeout=500):
+    """
+    Used to timeout the process of retrieving the credentials.
+    :param flow: the authentication flow object
+    :param state: the state id of the authentication
+    :param auth_port: the port to run the authentication server on
+    :param user: the user to save the credentials to
+    :param timeout: the timeout in seconds
+    """
     thread = threading.Thread(target=retrieve_creds, args=(flow, state, auth_port, user))
     thread.start()
     thread.join(timeout=timeout)
 
 
 def link_account():
+    """
+    Links the user's gmail account to the app.
+    Runs the authentication process in a new thread.
+    """
     if st.session_state["authed_user"].gmail_linked():
         st.session_state["authed_user"].gmail_token = None
         st.session_state["authed_user"].save()
@@ -71,7 +94,7 @@ def link_account():
 def _init_services():
     """
     Initializes the Gmail service.
-    :return:
+    :return: the Gmail service
     """
 
     creds = None
@@ -95,7 +118,14 @@ def _init_services():
     return st.session_state.service
 
 
-def get_email(service, email_id):
+def get_email(service, email_id) -> dict:
+    """
+    Gets the email with the given id.
+    Parsed into a dictionary.
+    :param service: the Gmail service
+    :param email_id: the id of the email
+    :return: the email as a dictionary
+    """
     msg = service.users().messages().get(userId="me", id=email_id).execute()
     subject = ""
     sender = ""
@@ -257,9 +287,3 @@ def search_email(query: str, max_results: int = 5):
             }
         )
     return formatted_messages
-
-
-def get_calendar():
-    """
-    Useful for getting the calendar of the user you are talking to.
-    """

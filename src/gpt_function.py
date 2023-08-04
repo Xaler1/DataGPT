@@ -4,7 +4,13 @@ import docstring_parser as docparser
 import streamlit as st
 import traceback
 
+
 class GPTFunction:
+    """
+    A wrapper for other functions to become GPT functions,
+    which can be passed to an LLM for use.
+    """
+
     def __init__(self,
                  name: str,
                  description: str,
@@ -27,7 +33,11 @@ class GPTFunction:
         }
         self.required.append("reason")
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        """
+        Convert the function to a dictionary in the OpenAI function format
+        :return: the function as a dictionary
+        """
         return {
             "name": self.name,
             "description": self.description,
@@ -38,7 +48,14 @@ class GPTFunction:
             }
         }
 
-    def __call__(self, args: dict):
+    def __call__(self, args: dict) -> str:
+        """
+        Calls the inner function with the given parameters
+        The parameters are converted to the correct types
+        :param args: the parameters to pass to the function
+        :return: the output of the function as a JSON string
+        """
+
         args.pop("reason")
         # Covert to correct types
         for property in self.properties:
@@ -58,7 +75,14 @@ class GPTFunction:
         return json.dumps(result, indent=4)
 
 
-def gpt_function(func):
+def gpt_function(func) -> GPTFunction:
+    """
+    A decorator to convert a function to a GPT function
+    Parses the description and parameters from the docstring as well as their types
+    from the signature.
+    :param func: the function to convert
+    :return: the wrapped GPT function
+    """
     mapping = {
         "str": "string",
         "int": "integer",
@@ -128,7 +152,7 @@ def gpt_function(func):
             if parameters[param].default is inspect.Parameter.empty:
                 required.append(param)
 
-    except Exception as e:
+    except Exception:
         st.error(f"Error parsing the '{func.__name__}' function")
         st.code(traceback.format_exc())
         st.stop()

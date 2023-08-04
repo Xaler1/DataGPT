@@ -22,6 +22,11 @@ If needed ask the user clarifying questions instead of immediately working on th
 
 
 class Conversator:
+    """
+    The conversator class. Processes a single message and returns a response.
+    Processes all the function calls required.
+    """
+
     def __init__(self, functions: list):
         self.all_functions = functions
         openai.api_key = keys.openai_key
@@ -35,8 +40,13 @@ class Conversator:
         config = yaml.safe_load(open("config.yaml"))
         self.model_name = config["model"]["main"]
 
-
-    def process_msg(self, msg: str):
+    def process_msg(self, msg: str) -> str:
+        """
+        Process a single message from the user.
+        Either return a response or call a function until the LLM returns a response.
+        :param msg: The message from the user
+        :return: The final response to the user
+        """
         st.session_state["messages"].append({"role": "user", "content": msg})
         self.internal_messages.append({"role": "user", "content": msg})
         available_data = {}
@@ -70,12 +80,19 @@ class Conversator:
         return message["content"]
 
     def call_function(self, name: str, args: dict):
+        """
+        Calls a function with the parameters given.
+        Sends the result to the LLM and returns the response.
+        :param name: the name of the function to call
+        :param args: the arguments of the function to call
+        """
         func = self.functions[name]
         func_result = func(args)
         self.internal_messages.append({"role": "function", "name": name, "content": func_result})
         message = openai.ChatCompletion.create(
             model=self.model_name,
-            messages=self.internal_messages, #+ [{"role": "system", "content": "Only proceed if this achieved the desired result and no another function need to be called"}],
+            messages=self.internal_messages,
+            # + [{"role": "system", "content": "Only proceed if this achieved the desired result and no another function need to be called"}],
             functions=list(map(lambda x: x.to_dict(), self.functions.values())),
             function_call="auto"
         )
@@ -83,9 +100,16 @@ class Conversator:
         return message
 
     def reset_to_last(self):
+        """
+        Resets the messages to the last successfully processed message
+        TODO: fix this
+        """
         st.session_state["messages"] = st.session_state["messages"][:self.last_msg_len]
         self.internal_messages = self.internal_messages[:self.last_internal_msg_len]
 
     def reset(self):
+        """
+        Removes all the messages and resets the internal messages to the starter prompt
+        """
         st.session_state["messages"] = []
         self.internal_messages = [{"role": "system", "content": _starter_prompt}]

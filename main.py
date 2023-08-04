@@ -7,7 +7,12 @@ import pandas as pd
 import data.core as core
 from agents.data_describer import describe_dataframe
 
+
 def set_state_defaults():
+    """
+    Setting the default values for the session state
+    and defaults for the app appearance
+    """
     st.set_page_config(layout="wide")
     if "authentication_status" not in st.session_state:
         st.session_state["authentication_status"] = None
@@ -18,10 +23,13 @@ def set_state_defaults():
     if "data" not in st.session_state:
         st.session_state["data"] = {}
 
-def check_authentication(authenticator):
-    # Check the authentication status
-    authenticator.check_auth()
 
+def check_authentication(authenticator: Authenticator) -> None:
+    """
+    Checks the authentication status and shows the appropriate page
+    :param authenticator: the authenticator object
+    """
+    authenticator.check_auth()
     auth_state = st.session_state["authentication_status"]
 
     # Show the appropriate page based on the authentication status
@@ -41,7 +49,13 @@ def check_authentication(authenticator):
 
     return True
 
-def show_sidebar(authenticator):
+
+def show_sidebar(authenticator: Authenticator) -> None:
+    """
+    Shows all the elements of the sidebar. Also handles file uploading.
+    :param authenticator:
+    :return:
+    """
     authenticator.show_logout()
     st.sidebar.button("Clear chat", on_click=lambda: st.session_state.conversator.reset())
     gmail_linked = st.session_state["authed_user"].gmail_linked()
@@ -60,6 +74,7 @@ def show_sidebar(authenticator):
                 summary = describe_dataframe(name, dataframe)
             core.save_new_data(dataframe, name, summary)
 
+    # Show all the data
     col1, col2, col3 = expander.columns(3)
     with col1:
         st.header("Name")
@@ -85,6 +100,3 @@ if __name__ == "__main__":
         show_sidebar(authenticator)
         chat = Chat()
         chat.run()
-
-
-

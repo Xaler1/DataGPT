@@ -14,6 +14,10 @@ import streamlit_js_eval as stjs
 
 
 class Chat:
+    """
+    The chat class. Handles all the chat logic.
+    """
+
     def __init__(self):
         pass
 
@@ -36,10 +40,12 @@ class Chat:
                                                         analyze_data, transform_data, undo_transformation
                                                         ])
 
+        # Show all the available functions in the sidebar
         with st.sidebar.expander("functions", expanded=False):
             for function in st.session_state.conversator.all_functions:
                 st.checkbox(function.name, value=True)
 
+        # Print all the messages
         with st.container():
             for message in st.session_state["messages"]:
                 if message["role"] == "plot":
