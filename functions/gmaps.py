@@ -78,6 +78,7 @@ def search_place(query: str,
     """
     Useful for searching for places. Can have a very broad query, e.g. "pizza in London".
     Should be used in most cases when searching for a place.
+    This will not provide any additional location information, so it is recommended to use the get_place_details function
     :param query: the search query
     :param location: the latitude and longitude of the location to search in, e.g. "51.5074,0.1278"
     :param minprice: the minimum price level of the places to search for (0-4)
@@ -123,6 +124,7 @@ def search_place(query: str,
 def get_place_details(place_id: str):
     """
     Useful for getting the details of a place. The address, phone number, website, opening hours, and link to Google Maps.
+
     :param place_id: the place ID of the place to get the details of
     """
 
@@ -130,15 +132,20 @@ def get_place_details(place_id: str):
     response = requests.get(url)
     result = json.loads(response.text)["result"]
 
-    return {
+    formatted_result = {
         "name": result["name"],
         "address": result["formatted_address"],
-        "phone_number": result["formatted_phone_number"],
         "rating": result["rating"],
-        "opening_hours": result["opening_hours"]["weekday_text"],
-        "website": result["website"],
         "link": f"https://www.google.com/maps/place/?q=place_id:{result['place_id']}",
     }
+    if "formatted_phone_number" in result:
+        formatted_result["phone_number"] = result["formatted_phone_number"]
+    if "website" in result:
+        formatted_result["website"] = result["website"]
+    if "opening_hours" in result:
+        formatted_result["opening_hours"] = result["opening_hours"]["weekday_text"]
+
+    return formatted_result
 
 
 @gpt_function
