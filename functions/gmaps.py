@@ -139,3 +139,34 @@ def get_place_details(place_id: str):
         "website": result["website"],
         "link": f"https://www.google.com/maps/place/?q=place_id:{result['place_id']}",
     }
+
+
+@gpt_function
+def get_travel_distance(origin: str, destination: str, mode: str):
+    """
+    Useful for getting the travel distance and time between two locations.
+    :param origin: The address of the origin location, e.g. "London, UK"
+    :param destination: The address of the destination location, e.g. "Paris, France"
+    :param mode: the mode of transport, can be one of: "walking", "driving", "transit", "bicycling"
+    """
+
+
+    url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={origin}&destinations={destination}&mode={mode}&units=imperial&key={keys.gmaps_key}"
+    response = requests.get(url)
+    result = json.loads(response.text)["rows"][0]["elements"][0]
+
+    if result["status"] != "OK":
+        return result["status"]
+
+    return {
+        "distance": result["distance"]["text"],
+        "duration": result["duration"]["text"],
+    }
+
+if __name__ == '__main__':
+    print(get_travel_distance({
+        "origin": "London, UK",
+        "destination": "Paris, France",
+        "mode": "driving",
+        "reason": ""
+    }))

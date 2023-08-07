@@ -4,7 +4,7 @@ import secret.keys as keys
 from src.conversator import Conversator
 from functions.weather import get_weather
 from functions.news import get_news_headlines, get_full_article
-from functions.gmaps import search_place, get_place_details
+from functions.gmaps import search_place, get_place_details, get_travel_distance
 from functions.basic import get_basic_info
 from data.storage import manual_write_data, get_data_details
 from data.manipulation import analyze_data, transform_data, undo_transformation
@@ -27,18 +27,19 @@ class Chat:
 
         # Initialize the conversator and save it to the session state
         if "conversator" not in st.session_state:
-            st.session_state.conversator = Conversator([get_weather,
-                                                        get_basic_info,
-                                                        #get_user_email,
-                                                        #send_email, search_email, get_email_by_id, reply_to_email,
-                                                        get_news_headlines, get_full_article,
-                                                        # search_places, find_nearby,
-                                                        search_place, get_place_details,
-                                                        #get_cik, get_company_info, get_company_filings, get_full_filing,
-                                                        plot_data,
-                                                        get_data_details,
-                                                        analyze_data, transform_data, undo_transformation
-                                                        ])
+            st.session_state.conversator = Conversator([
+                get_weather,
+                get_basic_info,
+                #get_user_email,
+                #send_email, search_email, get_email_by_id, reply_to_email,
+                get_news_headlines, get_full_article,
+                # search_places, find_nearby,
+                search_place, get_place_details, get_travel_distance,
+                #get_cik, get_company_info, get_company_filings, get_full_filing,
+                plot_data,
+                get_data_details,
+                analyze_data, transform_data, undo_transformation
+            ])
 
         # Show all the available functions in the sidebar
         with st.sidebar.expander("functions", expanded=False):
