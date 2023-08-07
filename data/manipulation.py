@@ -87,7 +87,15 @@ def transform_data(transformation_code: str, data_name: str):
     transformation_code = "import pandas as pd\nimport math\nimport numpy as np\n" + transformation_code
 
     # Find the last name to be assigned to checking which one appears last
-    potential = {"data": 0, "df": 0, data_name: 0, "transformed": 0, "transformed_data": 0, "transformed_df": 0}
+    potential = {
+        "data": 0,
+        "df": 0,
+        data_name: 0,
+        "transformed": 0,
+        "transformed_data": 0,
+        "transformed_df": 0,
+        "result": 0
+    }
     for idx, line in enumerate(transformation_code.split("\n")):
         for name in potential:
             spaced = name + " "
