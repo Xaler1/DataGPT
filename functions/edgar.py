@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup as bsoup
 import requests
 from src.gpt_function import gpt_function
-from agents.summarizer import html_extract
+from agents.basic import html_extract
+
 
 @gpt_function
 def get_cik(company: str):

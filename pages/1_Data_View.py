@@ -1,7 +1,7 @@
 import streamlit as st
 import data.core as core
 import pandas as pd
-from agents.data_describer import describe_dataframe
+from agents.basic import describe_dataframe
 
 st.set_page_config(
     page_title="Data View",

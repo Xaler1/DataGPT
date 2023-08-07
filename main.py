@@ -5,7 +5,7 @@ from src.dbmodels import *
 from functions.gmail import link_account
 import pandas as pd
 import data.core as core
-from agents.data_describer import describe_dataframe
+from agents.basic import describe_dataframe
 
 
 def set_state_defaults():

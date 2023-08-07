@@ -56,6 +56,8 @@ class GPTFunction:
         :return: the output of the function as a JSON string
         """
 
+        if "reason" not in args:
+            args["reason"] = "Working on it..."
         args.pop("reason")
         # Covert to correct types
         for property in self.properties:

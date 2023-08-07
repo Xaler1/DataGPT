@@ -8,6 +8,7 @@ from functions.gmaps import search_place, get_place_details, get_travel_distance
 from functions.basic import get_basic_info
 from data.storage import manual_write_data, get_data_details
 from data.manipulation import analyze_data, transform_data, undo_transformation
+from agents.basic import run_on_list
 from data.plotting import plot_data
 import traceback
 import streamlit_js_eval as stjs
@@ -28,6 +29,7 @@ class Chat:
         # Initialize the conversator and save it to the session state
         if "conversator" not in st.session_state:
             st.session_state.conversator = Conversator([
+                run_on_list,
                 get_weather,
                 get_basic_info,
                 #get_user_email,
@@ -38,7 +40,7 @@ class Chat:
                 #get_cik, get_company_info, get_company_filings, get_full_filing,
                 plot_data,
                 get_data_details,
-                analyze_data, transform_data, undo_transformation
+                analyze_data, transform_data, undo_transformation,
             ])
 
         # Show all the available functions in the sidebar
