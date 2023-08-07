@@ -6,6 +6,7 @@ import pandas as pd
 import json
 import re
 from time import sleep
+import codecs
 
 
 @gpt_function
@@ -14,6 +15,7 @@ def analyze_data(analysis_code: str, data_name: str):
     Useful for analyzing data, extracting statistics. Answering questions about the data. The data is a pandas dataframe.
     Before calling this function ALWAYS call 'get_data_details' to understand the structure of the data.
     DO NOT use this for changing or transforming the data. Use 'transform_data' for that.
+    This cannot be used to filter, sort or prune the data. Use 'transform_data' for that.
     :param analysis_code: the python code to be used to analyze the data. Load the data from a csv file.
     Put all of the results you need in a json called "result". There must be a single varible called "result"
     and it must be a dictionary of all the results you need.
@@ -42,8 +44,9 @@ def analyze_data(analysis_code: str, data_name: str):
     analysis_code = "import pandas as pd\nimport math\nimport numpy as np\n" + analysis_code
     # Add the results print
     analysis_code += "\nprint(result)"
+    analysis_code = "# -*- coding: utf-8 -*-\n" + analysis_code
 
-    with open("temp/analysis.py", "w") as f:
+    with open("temp/analysis.py", "w", encoding="utf-8") as f:
         f.write(analysis_code)
     process = Popen(["python", "temp/analysis.py"], stdout=PIPE, stderr=PIPE)
     while process.poll() is None:
@@ -53,7 +56,7 @@ def analyze_data(analysis_code: str, data_name: str):
         return {"error": stderr.decode("utf-8")}
     else:
         print("\nResults:")
-        result = stdout.decode("utf-8").replace("'", '"')
+        result = stdout.decode("latin-1").replace("'", '"')
         print(result)
         try:
             results = json.loads(result)
@@ -73,6 +76,7 @@ def transform_data(transformation_code: str, data_name: str):
     This should be the code and just the code, do not add any additional comments or text.
     Make sure to only use columns that are specified in the data. Remember, they can be slightly different from the user input!
     Think about what columns are needed and not what exactly the user inputted.
+    Always remember to deal correctly with missing values.
     :param data_name: the name of the data to be analyzed.
     """
 
@@ -85,12 +89,15 @@ def transform_data(transformation_code: str, data_name: str):
     transformation_code = f"data = pd.read_csv('temp/data.csv')\n" + transformation_code
     # Add imports to the code
     transformation_code = "import pandas as pd\nimport math\nimport numpy as np\n" + transformation_code
+    transformation_code = "# -*- coding: utf-8 -*-\n" + transformation_code
 
     # Find the last name to be assigned to checking which one appears last
     final_data_name = ""
     for idx, line in enumerate(transformation_code.split("\n")):
         if "=" in line:
-            final_data_name = line[:line.index("=")].strip()
+            name = line[:line.index("=")].strip()
+            if line.index(name) == 0:
+                final_data_name = line[:line.index("=")].strip()
         if "to_csv" in line:
             final_data_name = line[:line.index(".")].strip()
     transformation_code += f"\n{final_data_name}.to_csv('temp/data.csv', index=False)"
@@ -102,7 +109,7 @@ def transform_data(transformation_code: str, data_name: str):
         return {"error": "The dataset does not exist. Please store the dataset first."}
     data.to_csv("temp/data.csv", index=False)
 
-    with open("temp/transformation.py", "w") as f:
+    with open("temp/transformation.py", "w", encoding="utf-8") as f:
         f.write(transformation_code)
     process = Popen(["python", "temp/transformation.py"], stdout=PIPE, stderr=PIPE)
     while process.poll() is None:
