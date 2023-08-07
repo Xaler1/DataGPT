@@ -87,22 +87,12 @@ def transform_data(transformation_code: str, data_name: str):
     transformation_code = "import pandas as pd\nimport math\nimport numpy as np\n" + transformation_code
 
     # Find the last name to be assigned to checking which one appears last
-    potential = {
-        "data": 0,
-        "df": 0,
-        data_name: 0,
-        "transformed": 0,
-        "transformed_data": 0,
-        "transformed_df": 0,
-        "result": 0
-    }
+    final_data_name = ""
     for idx, line in enumerate(transformation_code.split("\n")):
-        for name in potential:
-            spaced = name + " "
-            if spaced in line and line.index(spaced) == 0:
-                potential[name] = idx
-
-    final_data_name = max(potential, key=potential.get)
+        if "=" in line:
+            final_data_name = line[:line.index("=")].strip()
+        if "to_csv" in line:
+            final_data_name = line[:line.index(".")].strip()
     transformation_code += f"\n{final_data_name}.to_csv('temp/data.csv', index=False)"
 
 
