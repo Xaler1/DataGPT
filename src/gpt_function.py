@@ -16,7 +16,8 @@ class GPTFunction:
                  description: str,
                  properties: dict,
                  required: list = None,
-                 func_callable: callable = None
+                 func_callable: callable = None,
+                 show_spinner: bool = True
                  ):
 
         if required is None:
@@ -26,6 +27,7 @@ class GPTFunction:
         self.properties = properties
         self.required = required
         self.func_callable = func_callable
+        self.show_spinner = show_spinner
 
         self.properties["reason"] = {
             "type": "string",
@@ -56,8 +58,6 @@ class GPTFunction:
         :return: the output of the function as a JSON string
         """
 
-        if "reason" not in args:
-            args["reason"] = "Working on it..."
         args.pop("reason")
         # Covert to correct types
         for property in self.properties:
@@ -165,5 +165,11 @@ def gpt_function(func) -> GPTFunction:
         description=description,
         properties=properties,
         required=required,
-        func_callable=func
+        func_callable=func,
     )
+
+
+def gpt_agent(func) -> GPTFunction:
+    function = gpt_function(func)
+    function.show_spinner = False
+    return function

@@ -77,8 +77,8 @@ def search_place(query: str,
                  minrating: int = 0):
     """
     Useful for searching for places. Can have a very broad query, e.g. "pizza in London".
-    Should be used in most cases when searching for a place.
     This will not provide any additional location information, so it is recommended to use the get_place_details function
+    This will not provide coordiantes!
     :param query: the search query
     :param location: the latitude and longitude of the location to search in, e.g. "51.5074,0.1278"
     :param minprice: the minimum price level of the places to search for (0-4)

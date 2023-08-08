@@ -3,7 +3,7 @@ import json
 import openai
 import pandas as pd
 from bs4 import BeautifulSoup as bsoup
-from src.gpt_function import gpt_function
+from src.gpt_function import gpt_agent
 import streamlit as st
 
 
@@ -68,7 +68,7 @@ def html_extract(text: str):
     return response["choices"][0]["message"]["content"]
 
 
-@gpt_function
+@gpt_agent
 def run_on_list(function_name: str, args: list[str], goal: str):
     """
     Use this if you need to run a function multiple times on different arguments.
@@ -103,19 +103,20 @@ def run_on_list(function_name: str, args: list[str], goal: str):
     """
 
     messages = [{"role": "system", "content": starter_prompt}]
-
+    prev = "Working on it..."
     for arg_set in args:
-        result = func(arg_set)
-        new_msg = f"""function input: "{arg_set}", function output: "{result}" """
-        messages.append({"role": "user", "content": new_msg})
-        summarization = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages
-        )
-        summarization = summarization["choices"][0]["message"]["content"]
-        messages.append({"role": "assistant", "content": summarization})
-        results.append(summarization)
-        st.write(json.loads(summarization)["input"])
+        with st.spinner(prev):
+            result = func(arg_set)
+            new_msg = f"""function input: "{arg_set}", function output: "{result}" """
+            messages.append({"role": "user", "content": new_msg})
+            summarization = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages
+            )
+            summarization = summarization["choices"][0]["message"]["content"]
+            messages.append({"role": "assistant", "content": summarization})
+            results.append(summarization)
+        prev = json.loads(summarization)["input"]
 
     print(results)
     return results

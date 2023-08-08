@@ -3,6 +3,7 @@ from secret import keys
 import json
 import streamlit as st
 import data.core as core
+from src.gpt_function import GPTFunction
 import yaml
 
 unused_email_prompt = """Emails must absolutely always use html for formatting.
@@ -23,6 +24,7 @@ Only repeat actions if it is necessary.
 In your responses only include information that is relevant to the user's query.
 If presenting requested information, keep your own comments to a minimum.
 If needed ask the user clarifying questions instead of immediately working on the task.
+Use complete_task as much as possible for anything that is even slightly complex.
 """
 
 
@@ -32,13 +34,15 @@ class Conversator:
     Processes all the function calls required.
     """
 
+    functions: dict[str, GPTFunction]
+
     def __init__(self, functions: list):
         self.all_functions = functions
         openai.api_key = keys.openai_key
         self.internal_messages = [{"role": "system", "content": _starter_prompt}]
+        self.last_internal_msg_len = 1
         self.functions = {}
         self.last_msg_len = 0
-        self.last_internal_msg_len = 1
         for function in functions:
             self.functions[function.name] = function
 
@@ -74,8 +78,13 @@ class Conversator:
             func_args = json.loads(message["function_call"]["arguments"])
             if "reason" not in func_args:
                 func_args["reason"] = "Working on it..."
-            with st.spinner(f"{func_args['reason']}[{func_name}]"):
-                message = self.call_function(func_name, func_args)
+
+            func = self.functions[func_name]
+            if func.show_spinner:
+                with st.spinner(f"{func_args['reason']}[{func_name}]"):
+                    message = self.call_function(func, func_args)
+            else:
+                message = self.call_function(func, func_args)
 
         st.session_state["messages"].append(message)
         self.internal_messages.append(message)
@@ -84,16 +93,15 @@ class Conversator:
         self.last_internal_msg_len = len(self.internal_messages)
         return message["content"]
 
-    def call_function(self, name: str, args: dict):
+    def call_function(self, func: GPTFunction, args: dict):
         """
         Calls a function with the parameters given.
         Sends the result to the LLM and returns the response.
-        :param name: the name of the function to call
+        :param func: the function to call
         :param args: the arguments of the function to call
         """
-        func = self.functions[name]
         func_result = func(args)
-        self.internal_messages.append({"role": "function", "name": name, "content": func_result})
+        self.internal_messages.append({"role": "function", "name": func.name, "content": func_result})
         message = openai.ChatCompletion.create(
             model=self.model_name,
             messages=self.internal_messages,
