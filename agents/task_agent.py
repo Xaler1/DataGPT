@@ -84,13 +84,15 @@ class TaskAgent:
             In a lot of cases you already know everything you need to know and can simply answer the question."""
             while not completed:
                 self.get_response(step_prompt)
-                prompt = f"Has this achived the goal of step {step}? If so, respond with 'yes'. If not, respond with 'no'"
+                prompt = f"""Has this achived the goal of step {step}? If so, respond with 'yes'. If not, respond with 'no'.
+                Do no include anything else in the response. Just a "yes" or "no", do not repeat the plan"""
                 response = self.get_response(prompt)
                 if "yes" in response.lower():
                     completed = True
                 else:
                     step_prompt = f"Please try again to complete step {step}. Fix whatever mistake was made. Remember, the user cannot help you"
-            prompt = f"The current plan is {steps}. Based on all of the above, does it need to be amended? If so, respond with 'yes'. If not, respond with 'no'"
+            prompt = f"""The current plan is {steps}. Based on all of the above, does it need to be amended? If so, respond with 'yes'. If not, respond with 'no'
+            Do not include anything else in the response. Just a "yes" or "no", do not repeat the plan"""
             response = self.get_response(prompt, allow_function_calls=False)
             if "yes" in response.lower():
                 prompt = f"Please amend the plan to include the new step. The next message must be a single json plan"
