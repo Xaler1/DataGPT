@@ -106,7 +106,8 @@ def run_on_list(function_name: str, args: list[str], goal: str):
     prev = "Working on it..."
     for arg_set in args:
         with st.spinner(prev):
-            result = func(arg_set)
+            args = json.loads(arg_set)
+            result = func(args)
             new_msg = f"""function input: "{arg_set}", function output: "{result}" """
             messages.append({"role": "user", "content": new_msg})
             summarization = openai.ChatCompletion.create(

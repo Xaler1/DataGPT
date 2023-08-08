@@ -69,16 +69,17 @@ def search_nearby(keyword: str,
     return filtered
 
 @gpt_function
-def search_place(query: str,
-                 location: str = "",
-                 minprice: int = 0,
-                 maxprice: int = 4,
-                 opennow: bool = False,
-                 minrating: int = 0):
+def lookup_physical_place(query: str,
+                          location: str = "",
+                          minprice: int = 0,
+                          maxprice: int = 4,
+                          opennow: bool = False,
+                          minrating: int = 0):
     """
-    Useful for searching for places. Can have a very broad query, e.g. "pizza in London".
+    Useful for searching for places in the real world. Can have a very broad query, e.g. "pizza in London".
     This will not provide any additional location information, so it is recommended to use the get_place_details function
     This will not provide coordiantes!
+    This cannot be used to load data!
     :param query: the search query
     :param location: the latitude and longitude of the location to search in, e.g. "51.5074,0.1278"
     :param minprice: the minimum price level of the places to search for (0-4)

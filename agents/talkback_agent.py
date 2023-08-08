@@ -51,7 +51,8 @@ def _step_retry_prompt(step: str) -> str:
 Fix whatever mistake was made.
 Fix any code issues there were.
 Fix the data if needed in the most sensible way possible.
-Make sure to execute the actual code using one of the data processing functions. 
+Make sure to execute the actual code using one of the data processing functions.
+Consider undoing changes you did in previous steps. 
 Remember, the user cannot help you"""
 
 
@@ -90,7 +91,8 @@ class TalkbackAgent(BaseAgent):
         prompt = _starter_prompt(task)
         task_done = False
 
-        step = self.get_response(prompt, allow_function_calls=False)
+        with st.spinner("Initializing agent..."):
+            step = self.get_response(prompt, allow_function_calls=False)
         while not task_done:
             step_success = False
             retries = 0
@@ -145,6 +147,7 @@ def complete_task(task: str):
     """
     Useful for completing complex, multi-step tasks.
     Use this if a task be completed in a single function call.
+    When calling this, DO NOT CALL ANY OTHER FUNCTIONS.
     :param task: the task you wish to be completed
     """
     print("Task:", task)

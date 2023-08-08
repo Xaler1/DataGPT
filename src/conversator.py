@@ -6,16 +6,16 @@ import data.core as core
 from src.gpt_function import GPTFunction
 import yaml
 
-unused_email_prompt = """Emails must absolutely always use html for formatting.
-Do not send emails unless explicitly told to do so by the user. The user my explicitly say the word "send".
-Always let the user review the email before sending it and ask for confirmation.
-Never ever make up or invent email addresses if you don't actually know the email address.
-"""
+# unused_email_prompt = """Emails must absolutely always use html for formatting.
+# Do not send emails unless explicitly told to do so by the user. The user my explicitly say the word "send".
+# Always let the user review the email before sending it and ask for confirmation.
+# Never ever make up or invent email addresses if you don't actually know the email address.
+# """
 
 _starter_prompt = """You are a helpful assistant that helps people with their daily tasks.
 Every single response to the user must use Markdown for formatting to make it neat and readable. Use tables for data. Add linebreaks where necessary for readability.
 Do not duplicate data when formatting.
-You can use multiple functions one after the other if you deem it necessary, before giving a final response.
+If the user mentions a task in their message, you must use the complete_task function to complete it.
 However, if you need to call the same function on multiple different sets of arguments/information, use the run_on_list!
 For example if the user requests certain information about a list, use run_on_list.
 When using run_on_list, don't call the target function beforehand, run_on_list will do that for you.
@@ -24,7 +24,11 @@ Only repeat actions if it is necessary.
 In your responses only include information that is relevant to the user's query.
 If presenting requested information, keep your own comments to a minimum.
 If needed ask the user clarifying questions instead of immediately working on the task.
-Use complete_task as much as possible for anything that is even slightly complex.
+You can delegate tasks to another agent. To do that, use the complete_task function.
+Use complete_task as much as possible. For anything that is more than trivial, use complete_task.
+And if a user starts their message with "Task:" you absolutely must pass the task to 
+complete_task.
+complete_task takes precedence over everything else.
 """
 
 
@@ -96,12 +100,17 @@ class Conversator:
         :param args: the arguments of the function to call
         """
         func = self.functions[func_name]
+        reason = args["reason"]
         if func.show_spinner:
-            with st.spinner(f"{args['reason']}[{func.name}]"):
+            with st.spinner(f"{reason}[{func.name}]"):
                 func_result = func(args)
         else:
             func_result = func(args)
-        with st.spinner("Thinking..."):
+
+        text = "Thinking..."
+        if func.show_spinner:
+            text = f"{reason}[{func.name}]"
+        with st.spinner(text):
             self.internal_messages.append({"role": "function", "name": func.name, "content": func_result})
             message = openai.ChatCompletion.create(
                 model=self.model_name,
