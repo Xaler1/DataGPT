@@ -9,7 +9,7 @@ from functions.basic import get_basic_info
 from data.storage import manual_write_data, get_data_details
 from data.manipulation import analyze_data, transform_data, undo_transformation
 from agents.basic import run_on_list
-from agents.task_agent import complete_task
+from agents.talkback_agent import complete_task
 from data.plotting import plot_data
 import traceback
 import streamlit_js_eval as stjs
@@ -44,11 +44,6 @@ class Chat:
                 analyze_data, transform_data, undo_transformation,
                 complete_task
             ])
-
-        # Show all the available functions in the sidebar
-        with st.sidebar.expander("functions", expanded=False):
-            for function in st.session_state.conversator.all_functions:
-                st.checkbox(function.name, value=True)
 
         # Print all the messages
         with st.container():

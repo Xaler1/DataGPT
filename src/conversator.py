@@ -79,12 +79,7 @@ class Conversator:
             if "reason" not in func_args:
                 func_args["reason"] = "Working on it..."
 
-            func = self.functions[func_name]
-            if func.show_spinner:
-                with st.spinner(f"{func_args['reason']}[{func_name}]"):
-                    message = self.call_function(func, func_args)
-            else:
-                message = self.call_function(func, func_args)
+            message = self.call_function(func_name, func_args)
 
         st.session_state["messages"].append(message)
         self.internal_messages.append(message)
@@ -93,23 +88,29 @@ class Conversator:
         self.last_internal_msg_len = len(self.internal_messages)
         return message["content"]
 
-    def call_function(self, func: GPTFunction, args: dict):
+    def call_function(self, func_name: str, args: dict):
         """
         Calls a function with the parameters given.
         Sends the result to the LLM and returns the response.
         :param func: the function to call
         :param args: the arguments of the function to call
         """
-        func_result = func(args)
-        self.internal_messages.append({"role": "function", "name": func.name, "content": func_result})
-        message = openai.ChatCompletion.create(
-            model=self.model_name,
-            messages=self.internal_messages,
-            # + [{"role": "system", "content": "Only proceed if this achieved the desired result and no another function need to be called"}],
-            functions=list(map(lambda x: x.to_dict(), self.functions.values())),
-            function_call="auto"
-        )
-        message = message["choices"][0]["message"]
+        func = self.functions[func_name]
+        if func.show_spinner:
+            with st.spinner(f"{args['reason']}[{func.name}]"):
+                func_result = func(args)
+        else:
+            func_result = func(args)
+        with st.spinner("Thinking..."):
+            self.internal_messages.append({"role": "function", "name": func.name, "content": func_result})
+            message = openai.ChatCompletion.create(
+                model=self.model_name,
+                messages=self.internal_messages,
+                # + [{"role": "system", "content": "Only proceed if this achieved the desired result and no another function need to be called"}],
+                functions=list(map(lambda x: x.to_dict(), self.functions.values())),
+                function_call="auto"
+            )
+            message = message["choices"][0]["message"]
         return message
 
     def reset_to_last(self):

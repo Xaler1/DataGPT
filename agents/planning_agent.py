@@ -27,6 +27,9 @@ Make sure that the output includes all of the information relevant to the task.
 Your next response must be a single json plan.
 Do not call functions unless it is actually necessary.
 Use the most relevant functions.
+Always explore the data before using it. Only use columns that actually exist.
+Always analyze and get the details of data. Do not use data without knowing what it is.
+Always use functions to manipulate the data. Do not simply give code.
 The task is: {task}
 Do not add any unnecessary steps to the plan."""
 
@@ -98,7 +101,7 @@ Make sure the response is well structured."""
 ###################################
 
 
-class TaskAgent:
+class PlanningAgent:
     def __init__(self, functions: list[GPTFunction]):
         openai.api_key = keys.openai_key
         config = yaml.safe_load(open("config.yaml", "r"))
@@ -218,7 +221,7 @@ def complete_task(task: str):
     # get a copy of functions in the conversator and remove this function from it. It is a dict
     functions = conversator.functions.copy()
     functions.pop("complete_task")
-    agent = TaskAgent(functions.values())
+    agent = PlanningAgent(functions.values())
     return {"result": agent.run(task)}
 
 
@@ -228,5 +231,5 @@ if __name__ == '__main__':
         analyze_data, transform_data, undo_transformation, get_data_details,
         run_on_list
     ]
-    agent = TaskAgent(functions)
+    agent = PlanningAgent(functions)
     agent.run("Calculate how long it would take to travel from London to Madrid. While stopping in Paris.")
